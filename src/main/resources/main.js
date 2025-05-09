@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Constants  from './Constants';
 
+let runningPath = "";
+const p = document.createElement('p');
+
 // 1. 创建 WebSocket 连接
 const socket = new WebSocket('ws://localhost:8080/elevator');
 
@@ -24,6 +27,10 @@ socket.onmessage = (event) => {
         let { floor, destFloor } = data.message;
         console.log(`楼层 ${floor} 请求到达目标楼层 ${destFloor}`)
         generateFloorRequest(floor, destFloor);
+    } else if (data.event === Constants.PRINT_BALL) {
+        console.log('打印小球: ' + data.message);
+        runningPath = data.message;
+        p.textContent = 'RunningPath: ' + runningPath;
     }
 };
 
@@ -296,14 +303,21 @@ function generateFloorRequest(floor, destFloor) {
 
 // 创建控制界面
 function createUI() {
-    // const container = document.createElement('div');
-    // container.style.position = 'absolute';
-    // container.style.top = '20px';
-    // container.style.left = '20px';
-    // container.style.backgroundColor = 'rgba(255,255,255,0.7)';
-    // container.style.padding = '10px';
-    // container.style.borderRadius = '5px';
-    //
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.top = '20px';
+    container.style.left = '20px';
+    container.style.backgroundColor = 'rgba(255,255,255,0.7)';
+    container.style.padding = '10px';
+    container.style.borderRadius = '5px';
+
+    // document创建一个段落文字, 用于显示RunningPath
+    p.textContent = 'RunningPath: ' + runningPath;
+    p.style.margin = '0';
+    container.appendChild(p);
+
+    document.body.appendChild(container);
+
     // for (let i = 1; i <= floorCount; i++) {
     //     const button = document.createElement('button');
     //     button.textContent = `呼叫电梯到 ${i}层`;

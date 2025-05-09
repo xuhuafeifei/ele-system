@@ -1,5 +1,14 @@
 package com.fgbg.ele.elevator;
 
-public record FloorRequest(int floorId) {
+import lombok.Data;
 
+@Data
+public class FloorRequest {
+    private int floorId;
+    private String color;
+
+    public FloorRequest(int floorId, String color) {
+        this.floorId = floorId;
+        this.color = color;
+    }
 }

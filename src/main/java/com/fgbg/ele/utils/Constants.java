@@ -19,6 +19,8 @@ public interface Constants {
     String START = "START";
     // 后端模拟产生FloorRequest
     String FLOOR_REQUEST_GENERATE = "FLOOR_REQUEST_GENERATE";
+    // 前端打印路径
+    String PRINT_BALL = "PRINT_BALL";
 
 
     // 每个floor每次调度时最多产生1个随机请求

@@ -21,6 +21,8 @@ const Constants = Object.freeze({
     // Floor request generation
     FLOOR_REQUEST_GENERATE: "FLOOR_REQUEST_GENERATE",
 
+    PRINT_BALL: "PRINT_BALL",
+
     // Request limits
     RANDOM_REQUEST_COUNT: 2, // Max 2 requests per floor per dispatch
     TOTAL_FLOORS: 3,

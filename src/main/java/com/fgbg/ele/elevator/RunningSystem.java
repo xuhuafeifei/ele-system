@@ -3,9 +3,12 @@ package com.fgbg.ele.elevator;
 import com.fgbg.ele.controller.*;
 import com.fgbg.ele.entity.*;
 import com.fgbg.ele.utils.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 
+@Slf4j
 public class RunningSystem {
 
     private String runningStatus = Constants.RUNNING_STATUS_STOPPED;
@@ -13,6 +16,7 @@ public class RunningSystem {
     private int nextStation = 1; // 电梯下一站
     private PositionManager pm;
     private volatile boolean renderDone = false; // 前端渲染是否完成
+    private final ReentrantLock lock = new ReentrantLock();
 
     public RunningSystem() {
     }
@@ -34,6 +38,7 @@ public class RunningSystem {
             while (true) {
                 Integer next = pm.getNext();
                 if (Objects.equals(next, Constants.NULL)) {
+                    sleep(100);
                     continue;
                 }
                 nextStation = next;
@@ -41,22 +46,28 @@ public class RunningSystem {
 
                 // 控制前端运行
                 // todo: 引入websocket, 通知前端电梯移动到下一站
+                log.info("电梯移动到下一站: " + next);
                 MyWebSocketHandler.broadcast(Response.toJson(next, Constants.ELEVATOR_MOVING_TO_NEXT));
                 // eventBus.emit(Constants.ELEVATOR_MOVING_TO_NEXT, next);
+
+                // 更新当前位置
+                currentFloor = next;
 
                 // 等待前端渲染完成
                 while (!renderDone) {
                     sleep(100);
                 }
 
+                lock.lock();
+                try {
+                    runningStatus = Constants.RUNNING_STATUS_STOPPED;
+                } finally {
+                    lock.unlock();
+                }
                 // TODO: 是否需要考虑停靠时用户进入电梯的动画？
-                // 为了简化设计，固定暂停2秒
-                sleep(2000);
+                sleep(500);
 
-                // 更新当前位置
-                currentFloor = next;
-                renderDone = false; // 重置渲染状态
-                runningStatus = Constants.RUNNING_STATUS_STOPPED;
+                renderDone = false;
             }
         }).start();
     }
@@ -76,9 +87,15 @@ public class RunningSystem {
      * 系统设计的复杂度.
      */
     int getCurrentFloor() {
-        if (Objects.equals(this.runningStatus, Constants.RUNNING_STATUS_RUNNING)) {
-            return this.nextStation;
+        // 这里之所以加锁, 是为了避免电梯状态正在被改变过程中, 有调用方获取到错误的CurrentFloor
+        lock.lock();
+        try {
+            if (Objects.equals(this.runningStatus, Constants.RUNNING_STATUS_RUNNING)) {
+                return this.nextStation;
+            }
+            return this.currentFloor;
+        } finally {
+            lock.unlock();
         }
-        return this.currentFloor;
     }
 }

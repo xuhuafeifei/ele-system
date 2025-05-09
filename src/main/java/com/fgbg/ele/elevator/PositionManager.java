@@ -3,9 +3,15 @@ package com.fgbg.ele.elevator;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import com.fgbg.ele.utils.*;
 
+import com.fgbg.ele.controller.MyWebSocketHandler;
+import com.fgbg.ele.entity.Response;
+import com.fgbg.ele.utils.*;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PositionManager {
+
 
     static class RedBlueBall {
         String color;
@@ -33,8 +39,13 @@ public class PositionManager {
     }
 
     public void inserts(FloorRequest... requests) {
-        for (var request : requests) {
-            insert(request);
+        lock.lock();
+        try {
+            for (var request : requests) {
+                insert(request);
+            }
+        } finally {
+            lock.unlock();
         }
     }
     /**
@@ -47,9 +58,11 @@ public class PositionManager {
         try {
             RedBlueBall current = dummyHead;
 
-            int floorId = request.floorId();
+            int floorId = request.getFloorId();
 
-            String color = calculateColor(floorId);
+            // 先暂时继承FloorRequest的color属性
+            String color = request.getColor();
+            // String color = calculateColor(floorId);
             if (Objects.equals(color, Constants.DARK)) {
                 return; // 如果是暗色，则废弃该请求
             }
@@ -75,16 +88,21 @@ public class PositionManager {
                     current.next = ball;
                 }
             }
+            // 真正插入新的小球后, 再通知前端渲染打印
+            MyWebSocketHandler.broadcast(Response.toJson(printBall(), Constants.PRINT_BALL));
         } finally {
             lock.unlock();
         }
     }
 
     /**
+     * 暂不考虑计算小球颜色. 因为最近的commit中再Request中已经存储颜色信息.
+     * <p>
      * 计算小球的颜色
      * @param floorId 请求的楼层编号
      * @return 红色、蓝色或暗色（无效）
      */
+    @Deprecated
     private String calculateColor(Integer floorId) {
         int currentFloor = rs.getCurrentFloor();
         if (currentFloor < floorId) {
@@ -114,6 +132,40 @@ public class PositionManager {
             } else {
                 return dummyHead.next.position;
             }
+        } finally {
+            consume();
+            lock.unlock();
+        }
+    }
+
+    /**
+     * 消费第一个非dummy的小球
+     */
+    public void consume() {
+        lock.lock();
+        try {
+            RedBlueBall current = dummyHead;
+            if (current.next != null) {
+                log.info("消耗小球: ({}, {})", current.next.position, current.next.color);
+                current.next = current.next.next;
+                // 消耗小球再进行前端渲染, 不然高频打印贼抽象
+                // MyWebSocketHandler.broadcast(Response.toJson(printBall(), Constants.PRINT_BALL));
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public String printBall() {
+        lock.lock();
+        try {
+            RedBlueBall current = dummyHead.next;
+            StringBuilder sb = new StringBuilder("路径: ");
+            while (current != null) {
+                sb.append("(").append(current.position).append(", ").append(current.color).append(") ").append(" -> ");
+                current = current.next;
+            }
+            return sb.toString();
         } finally {
             lock.unlock();
         }

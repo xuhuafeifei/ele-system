@@ -30,9 +30,9 @@ public class Building {
         this.ele     = new Elevator();
         this.start   = false;
         this.clients = Arrays.asList(
-                              new FloorClient(1, Constants.TOTAL_FLOORS),
-                              new FloorClient(2, Constants.TOTAL_FLOORS),
-                              new FloorClient(3, Constants.TOTAL_FLOORS)
+                              new FloorClient(1, Constants.TOTAL_FLOORS, this.ele.getRs()),
+                              new FloorClient(2, Constants.TOTAL_FLOORS, this.ele.getRs()),
+                              new FloorClient(3, Constants.TOTAL_FLOORS, this.ele.getRs())
                        );
         this.clients.forEach(client -> client.doConnect(this.ele));
     }
