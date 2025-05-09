@@ -12,23 +12,25 @@ public class RandomUtils {
         return random.nextInt(max);
     }
 
-    // 获取 [min, max) 范围内的随机整数
+    // 获取 [min, max] 范围内的随机整数
     public static int nextInt(int min, int max) {
-        return random.nextInt(max - min) + min;
+        return random.nextInt(max - min + 1) + min;
     }
 
     public static int nextIntExclude(int min, int max, int exclude) {
-        int result = random.nextInt(max - min) + min;
+        int bound = max - min + 1;
+        int result = random.nextInt(bound) + min;
         while (result == exclude) {
-            result = random.nextInt(max - min) + min;
+            result = random.nextInt(bound) + min;
         }
         return result;
     }
 
     public static int nextIntExclude(int min, int max, List<Integer> excludes) {
-        int result = random.nextInt(max - min) + min;
+        int bound = max - min + 1;
+        int result = random.nextInt(bound) + min;
         while (excludes.contains(result)) {
-            result = random.nextInt(max - min) + min;
+            result = random.nextInt(bound) + min;
         }
         return result;
     }

@@ -1,13 +1,16 @@
 package com.fgbg.ele.elevator;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Slf4j
 public class RequestPool {
 
     private final Lock lock = new ReentrantLock();
-    private final Set<FloorRequest> pool = Collections.synchronizedSet(new HashSet<>());
+    private final List<FloorRequest> pool = new LinkedList<>();
     private final PositionManager pm;
 
     public RequestPool(PositionManager pm) {
@@ -30,8 +33,13 @@ public class RequestPool {
     public void send() {
         lock.lock();
         try {
+            if (pool.isEmpty()) {
+                log.info("请求池为空，无需发送");
+                return;
+            }
+            log.info("发送请求：{}", pool);
             // 通知pm处理请求
-            pm.inserts(new ArrayList<>(pool).toArray(new FloorRequest[pool.size()]));
+            pm.inserts(pool.toArray(FloorRequest[]::new));
 
             // 发送后清空池子
             pool.clear();

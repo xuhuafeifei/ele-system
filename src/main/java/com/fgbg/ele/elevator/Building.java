@@ -3,6 +3,7 @@ package com.fgbg.ele.elevator;
 import com.fgbg.ele.entity.*;
 import com.fgbg.ele.utils.*;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
  */
 @Component
 @Data
+@Slf4j
 public class Building {
 
     private final   Elevator ele;
@@ -32,6 +34,7 @@ public class Building {
                               new FloorClient(2, Constants.TOTAL_FLOORS),
                               new FloorClient(3, Constants.TOTAL_FLOORS)
                        );
+        this.clients.forEach(client -> client.doConnect(this.ele));
     }
 
     /**
@@ -42,8 +45,10 @@ public class Building {
         Response response = GsonUtils.fromJson(msg, Response.class);
 
         if (response.getEvent().equals(Constants.ELEVATOR_RENDER_DONE)) {
+            log.info("电梯渲染完成...");
             ele.getRs().renderDone();
         } else if (response.getEvent().equals(Constants.START)) {
+            log.info("电梯启动...");
             this.start = true;
             ele.getRs().doRun();
         }
@@ -63,7 +68,6 @@ public class Building {
      * 模拟楼层产生请求
      */
     public void mockFloorRequest() {
-        // system启动后才可以发送请求
         if (this.start) {
             // 随机挑选一楼产生请求
             List<Integer> hash = new ArrayList<>();

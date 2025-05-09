@@ -1,27 +1,24 @@
 package com.fgbg.ele.config;
 
+import com.fgbg.ele.controller.MyWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-/**
- * @author feigebuge
- * @email 2508020102@qq.com
- */
 @Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketConfigurer {
 
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic");
-        config.setApplicationDestinationPrefixes("/app");
+    private final MyWebSocketHandler webSocketHandler;
+
+    public WebSocketConfig(MyWebSocketHandler webSocketHandler) {
+        this.webSocketHandler = webSocketHandler;
     }
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").withSockJS();
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry  registry) {
+        registry.addHandler(webSocketHandler, "/elevator")
+                .setAllowedOrigins("*");
     }
 }

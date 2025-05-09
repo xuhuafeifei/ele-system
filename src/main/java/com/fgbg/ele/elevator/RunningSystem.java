@@ -9,8 +9,8 @@ import java.util.Objects;
 public class RunningSystem {
 
     private String runningStatus = Constants.RUNNING_STATUS_STOPPED;
-    private int currentFloor = 0;
-    private int nextStation = 0; // 电梯下一站
+    private int currentFloor = 1;
+    private int nextStation = 1; // 电梯下一站
     private PositionManager pm;
     private volatile boolean renderDone = false; // 前端渲染是否完成
 

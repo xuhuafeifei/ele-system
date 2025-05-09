@@ -21,8 +21,9 @@ public interface Constants {
     String FLOOR_REQUEST_GENERATE = "FLOOR_REQUEST_GENERATE";
 
 
-    // 每个floor每次调度时最多产生2个随机请求
-    int RANDOM_REQUEST_COUNT = 2;
+    // 每个floor每次调度时最多产生1个随机请求
+    int RANDOM_REQUEST_COUNT = 1;
+
     // 总共有3个楼层
     int TOTAL_FLOORS = 3;
     // 随机挑选1楼产生request请求
