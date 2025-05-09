@@ -1,14 +1,19 @@
 {
   "name": "elevator_scheduler",
   "version": "1.0.0",
-  "main": "Constants.js",
+  "description": "电梯调度可视化前端",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
   "dependencies": {
     "gsap": "^3.13.0",
     "three": "^0.176.0"
